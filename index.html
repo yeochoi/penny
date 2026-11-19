@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Penny</title>
+<meta name="description" content="Spend a little less each month.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Penny">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#FBF7EC">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="design-system/tokens.css?v=1">
+<style>
+/* Colours, type and sizes come from design-system/tokens.css. Only app values live here. */
+:root { --st: env(safe-area-inset-top, 0px); --sb: env(safe-area-inset-bottom, 0px); --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1); }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; background: var(--bg); }
+html.sheet-open, html.sheet-open body { background: #1A150C; }
+body { font-family: var(--font-sans); color: var(--ink); -webkit-font-smoothing: antialiased; overflow: hidden; }
+button { font-family: inherit; color: inherit; }
+.num { font-variant-numeric: tabular-nums; }
+svg { flex-shrink: 0; }
+
+/* The page steps back when a sheet opens, like iOS. */
+.page { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--bg); transform-origin: 50% 0; transition: transform .45s var(--ease-sheet), border-radius .45s var(--ease-sheet), filter .45s var(--ease-sheet); overflow: hidden; }
+html.sheet-open .page { transform: translateY(calc(var(--st) + 8px)) scale(.93); border-radius: 18px; filter: brightness(.86); }
+.wrap { width: 100%; max-width: 480px; margin: 0 auto; }
+.view { flex-grow: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: calc(var(--st) + 20px) var(--gutter) 24px; display: none; flex-direction: column; }
+.view.on { display: flex; }
+.view > .wrap { display: flex; flex-direction: column; flex-grow: 1; }
+.bottom { flex-shrink: 0; padding: 0 var(--gutter) calc(var(--sb) + 12px); }
+@media (display-mode: browser) { .bottom { padding-bottom: calc(var(--sb) + 20px); } }
+
+.topbar { height: 44px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.muted { color: var(--muted); }
+.round { all: unset; box-sizing: border-box; width: 44px; height: 44px; border-radius: 999px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); }
+.round:disabled { color: var(--quiet); cursor: default; }
+.round.fill { background: var(--surface); color: var(--ink); }
+.title { margin: 0; }
+p { margin: 0; }
+.change { display: flex; align-items: center; gap: 6px; font-weight: 500; margin-top: 8px; }
+.gold { color: var(--gold-text); } .coral { color: var(--coral-text); }
+
+.line { height: var(--size-line); border-radius: 999px; background: var(--track); overflow: hidden; }
+.line > i { display: block; height: 100%; border-radius: 999px; background: var(--gold-line); transition: width .5s var(--ease-sheet); }
+.line.over > i { background: var(--coral-text); }
+.target { margin-top: 24px; }
+.target .caption { margin-top: 10px; display: flex; justify-content: space-between; gap: 12px; }
+
+.card { margin-top: 32px; border-radius: var(--radius-card); background: var(--surface); padding: 8px var(--card-pad); display: flex; flex-direction: column; }
+.row { all: unset; box-sizing: border-box; min-height: var(--size-row); display: flex; flex-direction: column; justify-content: center; gap: 8px; cursor: pointer; padding: 10px 0; }
+.row .body { display: flex; justify-content: space-between; gap: 12px; }
+.more { all: unset; height: 44px; display: flex; align-items: center; color: var(--gold-text); cursor: pointer; }
+.empty { padding: 18px 0; color: var(--muted); line-height: 22px; }
+
+.main-btn { all: unset; box-sizing: border-box; width: 100%; height: var(--size-button); border-radius: 999px; background: var(--primary); color: var(--ink); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: transform .15s, opacity .15s; }
+.main-btn:active { transform: scale(.98); }
+.main-btn:disabled { opacity: .4; cursor: default; transform: none; }
+#addBtn { margin-bottom: 16px; }
+body:not(.on-month) #addBtn { display: none; }
+
+.tabbar { height: var(--size-nav); border-radius: 999px; background: var(--surface); box-shadow: var(--shadow-nav); display: flex; align-items: center; justify-content: space-around; padding: 0 6px; }
+.tabbtn { all: unset; box-sizing: border-box; width: 100px; height: var(--size-tab); border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; transition: background .25s, color .25s; }
+.tabbtn[aria-current="page"] { background: var(--soft); color: var(--gold-text); font-weight: 500; }
+
+/* Compare */
+.chart { margin-top: 24px; border-radius: var(--radius-card); background: var(--surface); padding: 22px var(--card-pad) 16px; }
+.bars, .months { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
+.bars { height: 140px; align-items: end; }
+.bars > div { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; height: 140px; }
+.bars b { display: block; width: 100%; border-radius: 999px; background: var(--track); min-height: 0; transition: height .5s var(--ease-sheet); }
+.bars .now b { background: var(--primary); }
+.bars span { font-weight: 500; color: var(--gold-text); white-space: nowrap; visibility: hidden; }
+.bars .now span { visibility: visible; }
+.months { margin-top: 10px; text-align: center; color: var(--muted); }
+.months .now { color: var(--ink); font-weight: 500; }
+.since { margin-top: 24px; }
+.since + .card { margin-top: 10px; padding-top: 4px; padding-bottom: 4px; }
+.crow { height: 50px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+/* Settings */
+.set-card { margin-top: 24px; border-radius: var(--radius-card); background: var(--surface); padding: 4px var(--card-pad); }
+.set-row { all: unset; box-sizing: border-box; width: 100%; min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; }
+.set-row.static { cursor: default; }
+.set-note { margin: 10px 4px 0; color: var(--muted); }
+.stepper { display: flex; align-items: center; gap: 4px; }
+.stepper .round { width: 40px; height: 40px; background: var(--bg); color: var(--ink); }
+.stepper .round:disabled { color: var(--quiet); }
+.stepper b { min-width: 44px; text-align: center; font-weight: 500; }
+.set-label { font-weight: 500; margin: 32px 4px 0; }
+.foot { margin-top: 32px; text-align: center; color: var(--muted); }
+
+/* Sheets */
+.sheet-wrap { position: fixed; inset: 0; z-index: 10; display: none; align-items: flex-end; background: rgba(26, 21, 12, .32); }
+.sheet-wrap.on { display: flex; animation: dim .3s ease-out; }
+.sheet-wrap.leaving { animation: undim .3s ease-in forwards; pointer-events: none; }
+.sheet { position: relative; width: 100%; height: calc(100% - var(--st) - 14px); background: var(--bg); border-radius: 18px 18px 0 0; display: flex; flex-direction: column; overflow: hidden; transition: transform .3s var(--ease-sheet); }
+.sheet.dragging { transition: none; }
+.sheet-wrap.on .sheet { animation: up .5s var(--ease-sheet); }
+.sheet-wrap.leaving .sheet { animation: down .3s cubic-bezier(.4, 0, 1, 1) forwards; }
+@keyframes dim { from { background-color: transparent; } }
+@keyframes undim { to { background-color: transparent; } }
+@keyframes up { from { transform: translateY(100%); } }
+@keyframes down { to { transform: translateY(105%); } }
+.grab { position: absolute; top: 6px; left: 50%; width: 36px; height: 5px; margin-left: -18px; border-radius: 999px; background: var(--track); }
+.sheet-head { flex-shrink: 0; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 18px var(--gutter) 0; touch-action: none; }
+.sheet-head > :last-child { justify-self: end; }
+.sheet-body { flex-grow: 1; overflow-y: auto; padding: 0 var(--gutter); display: flex; flex-direction: column; }
+.sheet-foot { flex-shrink: 0; padding: 12px var(--gutter) calc(var(--sb) + 20px); }
+.pill-btn { all: unset; box-sizing: border-box; height: 44px; padding: 0 18px; border-radius: 999px; background: var(--surface); display: flex; align-items: center; gap: 8px; cursor: pointer; position: relative; }
+.pill-btn input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+.text-btn { all: unset; height: 44px; padding: 0 8px; display: flex; align-items: center; cursor: pointer; }
+
+/* Add */
+.amount-box { margin-top: 40px; display: flex; flex-direction: column; align-items: center; }
+#amount { color: var(--ink); white-space: nowrap; }
+#amount.zero { color: var(--quiet); }
+#noteBtn { margin-top: 6px; color: var(--muted); }
+#noteInput { margin-top: 6px; width: 100%; height: 44px; border: 0; border-radius: 999px; background: var(--surface); padding: 0 18px; font: 400 17px/22px var(--font-sans); color: var(--ink); text-align: center; outline: none; }
+#noteInput::placeholder { color: var(--muted); }
+.pills { margin-top: 20px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.pill { all: unset; box-sizing: border-box; height: var(--size-pill); border-radius: 999px; background: var(--surface); display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 4px; white-space: nowrap; cursor: pointer; transition: background .2s, box-shadow .2s; }
+.pill[aria-pressed="true"] { background: var(--soft); color: var(--gold-text); font-weight: 500; box-shadow: inset 0 0 0 1.5px var(--gold-line); }
+.pad { margin-top: 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.pad button { all: unset; height: 56px; display: flex; align-items: center; justify-content: center; border-radius: 16px; cursor: pointer; user-select: none; -webkit-user-select: none; }
+.pad button:active { background: var(--surface); }
+#delEntry { color: var(--coral-text); }
+/* Short screens, like Safari with its bars showing. Everything in Add still fits without scrolling. */
+@media (max-height: 720px) { .amount-box { margin-top: 12px; } .pills { margin-top: 12px; } .pad { margin-top: 8px; } .pad button { height: 46px; } .sheet-foot { padding-top: 8px; } }
+
+/* Entries of one category */
+.erow { all: unset; box-sizing: border-box; width: 100%; min-height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; }
+.erow span:first-child { display: flex; flex-direction: column; gap: 2px; }
+
+/* Design system */
+.ds-frame { flex-grow: 1; width: 100%; border: 0; background: var(--bg); }
+
+.toast { position: fixed; left: 50%; bottom: calc(var(--sb) + 150px); transform: translate(-50%, 20px); background: var(--ink); color: var(--surface); padding: 12px 20px; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 20; white-space: nowrap; }
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+</style>
+</head>
+<body class="on-month">
+<div class="page" id="page">
+
+  <!-- Month -->
+  <section class="view on" id="v-month" aria-label="Month">
+    <div class="wrap">
+      <div class="topbar">
+        <span class="small muted" id="mLabel"></span>
+        <div style="display:flex">
+          <button class="round" id="mPrev" aria-label="Previous month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+          <button class="round" id="mNext" aria-label="Next month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+        </div>
+      </div>
+      <div style="margin-top:28px">
+        <p class="label muted">Spent</p>
+        <p class="amount num" id="mTotal" style="margin-top:4px"></p>
+        <p class="small change" id="mChange"></p>
+        <div class="target" id="mTarget"></div>
+      </div>
+      <div class="card" id="mCats"></div>
+    </div>
+  </section>
+
+  <!-- Compare -->
+  <section class="view" id="v-compare" aria-label="Compare">
+    <div class="wrap">
+      <div class="topbar"><h1 class="title">Compare</h1></div>
+      <div style="margin-top:24px">
+        <p class="figure num" id="cFig"></p>
+        <p class="small muted" id="cSub" style="margin-top:4px"></p>
+        <p class="small change gold" id="cStreak" style="margin-top:12px"></p>
+      </div>
+      <div class="chart">
+        <div class="bars" id="cBars" role="img"></div>
+        <div class="months caption" id="cMonths"></div>
+      </div>
+      <p class="button since" id="cSince"></p>
+      <div class="card" id="cRows"></div>
+    </div>
+  </section>
+
+  <!-- Settings -->
+  <section class="view" id="v-settings" aria-label="Settings">
+    <div class="wrap">
+      <div class="topbar"><h1 class="title">Settings</h1></div>
+      <div class="set-card">
+        <div class="set-row static">
+          <span class="body">Less each month</span>
+          <div class="stepper"><button class="round" id="cutDown" aria-label="Less"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14"/></svg></button><b class="body num" id="cutVal"></b><button class="round" id="cutUp" aria-label="More"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>
+        </div>
+      </div>
+      <p class="caption set-note" id="cutNote"></p>
+
+      <p class="button set-label">Your data</p>
+      <div class="set-card" style="margin-top:10px">
+        <button class="set-row" id="backup"><span class="body">Save a backup</span><span class="caption muted" id="count"></span></button>
+        <label class="set-row" style="position:relative"><span class="body">Restore from a backup</span><input type="file" id="restore" accept="application/json,.json" style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
+      </div>
+      <p class="caption set-note">Penny keeps everything on this phone. Save a backup now and then, so you never lose it.</p>
+
+      <div class="set-card" style="margin-top:32px">
+        <button class="set-row" id="openDs"><span class="body">Design system</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+      </div>
+      <div class="set-card" style="margin-top:32px">
+        <button class="set-row" id="wipe" style="justify-content:center"><span class="body coral">Delete all spending</span></button>
+      </div>
+      <p class="caption foot">Penny 1.0</p>
+    </div>
+  </section>
+
+  <div class="bottom">
+    <div class="wrap">
+      <button class="main-btn button" id="addBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add spending</button>
+      <nav class="tabbar" aria-label="Main">
+        <button class="tabbtn" data-tab="month" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M14.5 9.2a3 3 0 1 0 0 5.6"/><path d="M8.5 11h4"/><path d="M8.5 13h4"/></svg><span class="tab">Month</span></button>
+        <button class="tabbtn" data-tab="compare"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V12"/><path d="M12 20V5"/><path d="M19 20v-6"/></svg><span class="tab">Compare</span></button>
+        <button class="tabbtn" data-tab="settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="tab">Settings</span></button>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<!-- Add or edit spending -->
+<div class="sheet-wrap" id="addSheet" role="dialog" aria-modal="true" aria-label="Add spending">
+  <div class="sheet">
+    <span class="grab" aria-hidden="true"></span>
+    <div class="sheet-head">
+      <button class="round fill" id="addClose" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg></button>
+      <button class="text-btn small" id="delEntry" style="visibility:hidden">Delete</button>
+      <label class="pill-btn small"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg><span id="dateLabel">Today</span><input type="date" id="dateInput" aria-label="Date"></label>
+    </div>
+    <div class="sheet-body">
+      <div class="wrap">
+        <div class="amount-box">
+          <p class="amount-entry num" id="amount" aria-live="polite"></p>
+          <button class="text-btn small" id="noteBtn">Add a note</button>
+          <input id="noteInput" type="text" placeholder="Note" maxlength="60" hidden>
+        </div>
+        <div class="pills" id="pills" role="group" aria-label="Category"></div>
+        <div class="pad key" id="pad"></div>
+      </div>
+    </div>
+    <div class="sheet-foot"><div class="wrap"><button class="main-btn button" id="save" disabled>Save</button></div></div>
+  </div>
+</div>
+
+<!-- Entries of one category -->
+<div class="sheet-wrap" id="catSheet" role="dialog" aria-modal="true" aria-labelledby="catTitle">
+  <div class="sheet">
+    <span class="grab" aria-hidden="true"></span>
+    <div class="sheet-head">
+      <button class="round fill" id="catClose" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg></button>
+      <span></span><span></span>
+    </div>
+    <div class="sheet-body">
+      <div class="wrap">
+        <h2 class="title" id="catTitle" style="margin-top:20px"></h2>
+        <p class="small muted" id="catSub" style="margin-top:4px"></p>
+        <div class="card" id="catList" style="margin-top:24px;padding-top:4px;padding-bottom:4px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Design system -->
+<div class="sheet-wrap" id="dsSheet" role="dialog" aria-modal="true" aria-label="Design system">
+  <div class="sheet">
+    <span class="grab" aria-hidden="true"></span>
+    <div class="sheet-head" style="padding-bottom:10px">
+      <button class="round fill" id="dsClose" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg></button>
+      <span class="button">Design system</span><span></span>
+    </div>
+    <iframe class="ds-frame" id="dsFrame" title="Penny design system"></iframe>
+  </div>
+</div>
+
+<div class="toast small" id="toast" role="status"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const KEY = 'penny-v1';
+const CATS = ['Groceries', 'Eating out', 'Home', 'Transport', 'Shopping', 'Fun', 'Health', 'Other'];
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+/* ---------- data ---------- */
+// Entries keep cents as whole numbers. start is the first day Penny was used, so a month that began before it never counts as full.
+function load() {
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && Array.isArray(s.entries)) return { cut: 5, ...s }; } catch (e) {}
+  return { entries: [], cut: 5, start: null };
+}
+let state = load();
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { toast('Could not save on this phone'); }
+}
+
+const pad2 = (n) => String(n).padStart(2, '0');
+const isoDay = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+const today = () => isoDay(new Date());
+const ymOf = (iso) => iso.slice(0, 7);
+const addMonths = (ym, n) => { const [y, m] = ym.split('-').map(Number); const d = new Date(y, m - 1 + n, 1); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`; };
+const dim = (ym) => { const [y, m] = ym.split('-').map(Number); return new Date(y, m, 0).getDate(); };
+const monthName = (ym) => MONTHS[Number(ym.slice(5)) - 1];
+const shortMonth = (ym) => monthName(ym).slice(0, 3);
+const thisYm = () => ymOf(today());
+
+const euros = (c) => '€' + Math.round(c / 100).toLocaleString('en-GB');
+const eurosCents = (c) => '€' + (c / 100).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+function total(ym, uptoDay = 31, cat = null) {
+  let t = 0;
+  for (const e of state.entries) if (ymOf(e.date) === ym && Number(e.date.slice(8)) <= uptoDay && (!cat || e.cat === cat)) t += e.amt;
+  return t;
+}
+// A month is full when Penny was already in use by its third day.
+function isFull(ym) { return !!state.start && state.start <= `${ym}-03`; }
+function hasStarted(ym) { return !!state.start && ymOf(state.start) <= ym; }
+// Each month's target is the month before minus the cut, set only when that month was full.
+function targetFor(ym) {
+  const prev = addMonths(ym, -1);
+  if (!isFull(prev) || prev >= thisYm()) return null;
+  const t = total(prev);
+  if (!t) return null;
+  return Math.round(t * (1 - state.cut / 100) / 100) * 100;
+}
+function streak() {
+  let n = 0, m = addMonths(thisYm(), -1);
+  while (true) { const t = targetFor(m); if (t === null || total(m) > t) break; n++; m = addMonths(m, -1); }
+  return n;
+}
+function lessMore(diff) {
+  if (Math.round(diff / 100) === 0) return { text: 'Same', cls: 'muted', dir: 0 };
+  return diff > 0 ? { text: `${euros(diff)} less`, cls: 'gold', dir: -1 } : { text: `${euros(-diff)} more`, cls: 'coral', dir: 1 };
+}
+
+/* ---------- icons ---------- */
+const arrow = (dir) => dir < 0
+  ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M6 13l6 6 6-6"/></svg>'
+  : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="M6 11l6-6 6 6"/></svg>';
+const check = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* ---------- month ---------- */
+let viewYm = thisYm();
+let showAll = false;
+function renderMonth() {
+  const now = thisYm(), current = viewYm === now, d = Number(today().slice(8));
+  const [y] = viewYm.split('-');
+  $('mLabel').textContent = `${monthName(viewYm)} ${y}`;
+  $('mPrev').disabled = !state.start || viewYm <= ymOf(state.start);
+  $('mNext').disabled = viewYm >= now;
+
+  const spent = total(viewYm);
+  $('mTotal').textContent = euros(spent);
+
+  // Change line. This month compares the same days of last month, a past month compares whole months.
+  const prev = addMonths(viewYm, -1), ch = $('mChange');
+  if (spent && isFull(prev)) {
+    const before = current ? total(prev, d) : total(prev);
+    const r = lessMore(before - spent);
+    const tail = current ? `than this time in ${monthName(prev)}` : `than ${monthName(prev)}`;
+    ch.className = `small change ${r.cls}`;
+    ch.innerHTML = r.dir === 0 ? `Same as ${current ? 'this time in ' : ''}${monthName(prev)}` : `${arrow(r.dir)}${r.text} ${tail}`;
+  } else { ch.className = 'small change muted'; ch.innerHTML = ''; }
+
+  // Target bar.
+  const t = targetFor(viewYm), box = $('mTarget');
+  if (t !== null) {
+    const over = spent > t, pct = Math.min(100, Math.round(spent / t * 100));
+    let left;
+    if (over) left = `<span class="coral" style="font-weight:500">${euros(spent - t)} over</span>`;
+    else if (current) { const n = dim(viewYm) - d + 1; left = `<span style="font-weight:500">${euros(t - spent)} left ${n === 1 ? 'for today' : `for ${n} days`}</span>`; }
+    else left = `<span class="gold" style="font-weight:500">Under target by ${euros(t - spent)}</span>`;
+    box.innerHTML = `<div class="line${over ? ' over' : ''}" role="img" aria-label="${pct} percent of the target used"><i style="width:${pct}%"></i></div><div class="caption">${left}<span class="muted">Target ${euros(t)}</span></div>`;
+  } else if (current) {
+    const soon = isFull(now) || (!state.start && d <= 3);
+    box.innerHTML = `<p class="caption muted">Your first target starts in ${monthName(addMonths(now, soon ? 1 : 2))}</p>`;
+  } else box.innerHTML = '';
+
+  // Categories.
+  const cats = CATS.map((c) => ({ c, a: total(viewYm, 31, c) })).filter((x) => x.a > 0).sort((a, b) => b.a - a.a);
+  const card = $('mCats');
+  if (!cats.length) { card.innerHTML = `<p class="body empty">${current ? 'Nothing yet this month. Tap Add spending to start.' : 'Nothing spent this month.'}</p>`; return; }
+  const max = cats[0].a, list = showAll ? cats : cats.slice(0, 4);
+  card.innerHTML = list.map((x) => `<button class="row" data-cat="${esc(x.c)}"><span class="body"><span>${esc(x.c)}</span><span class="num">${euros(x.a)}</span></span><span class="line"><i style="width:${Math.max(2, Math.round(x.a / max * 100))}%"></i></span></button>`).join('')
+    + (cats.length > 4 ? `<button class="more small" id="moreBtn">${showAll ? 'Show less' : `${cats.length - 4} more`}</button>` : '');
+}
+$('mCats').addEventListener('click', (e) => {
+  if (e.target.closest('#moreBtn')) { showAll = !showAll; renderMonth(); return; }
+  const r = e.target.closest('.row'); if (r) openCat(r.dataset.cat);
+});
+$('mPrev').onclick = () => { viewYm = addMonths(viewYm, -1); showAll = false; renderMonth(); };
+$('mNext').onclick = () => { viewYm = addMonths(viewYm, 1); showAll = false; renderMonth(); };
+
+/* ---------- compare ---------- */
+function renderCompare() {
+  const now = thisYm(), d = Number(today().slice(8));
+  const full = [];
+  for (let i = 6; i >= 1; i--) { const m = addMonths(now, -i); if (isFull(m)) full.push(m); }
+  if (full.length >= 2) {
+    const first = full[0], last = full[full.length - 1], r = lessMore(total(first) - total(last));
+    $('cFig').textContent = r.text;
+    $('cFig').className = 'figure num' + (r.dir > 0 ? ' coral' : '');
+    $('cSub').textContent = r.dir === 0 ? `${monthName(last)} was the same as ${monthName(first)}` : `A month than in ${monthName(first)}`;
+  } else {
+    $('cFig').textContent = euros(total(now));
+    $('cFig').className = 'figure num';
+    $('cSub').textContent = 'So far this month. Compare grows after two full months.';
+  }
+  const s = streak();
+  $('cStreak').innerHTML = s ? `${check}${s} month${s > 1 ? 's' : ''} in a row under target` : '';
+  $('cStreak').hidden = !s;
+
+  const months = []; for (let i = 5; i >= 0; i--) months.push(addMonths(now, -i));
+  const vals = months.map((m) => (hasStarted(m) ? total(m) : 0)), max = Math.max(...vals, 1);
+  $('cBars').innerHTML = months.map((m, i) => `<div class="${m === now ? 'now' : ''}"><span class="caption">So far</span><b style="height:${vals[i] ? Math.max(8, Math.round(vals[i] / max * 112)) : 0}px"></b></div>`).join('');
+  $('cBars').setAttribute('aria-label', 'Spent per month. ' + months.map((m, i) => `${monthName(m)} ${Math.round(vals[i] / 100)}${m === now ? ' so far' : ''}`).join(', ') + ', in euro');
+  $('cMonths').innerHTML = months.map((m) => `<span class="${m === now ? 'now' : ''}">${shortMonth(m)}</span>`).join('');
+
+  const prev = addMonths(now, -1);
+  $('cSince').textContent = `Since ${monthName(prev)}`;
+  const rows = isFull(prev) ? CATS.map((c) => ({ c, diff: total(prev, d, c) - total(now, 31, c) })).filter((x) => Math.round(x.diff / 100) !== 0) : [];
+  rows.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
+  const top = rows.slice(0, 4).sort((a, b) => b.diff - a.diff);
+  $('cRows').innerHTML = top.length
+    ? top.map((x) => { const r = lessMore(x.diff); return `<div class="crow"><span class="body">${esc(x.c)}</span><span class="small ${r.cls}" style="font-weight:500">${r.text}</span></div>`; }).join('')
+    : `<p class="body empty">${isFull(prev) ? 'No changes yet.' : `Each category compares with last month once ${monthName(prev)} is a full month in Penny.`}</p>`;
+}
+
+/* ---------- settings ---------- */
+function renderSettings() {
+  $('cutVal').textContent = `${state.cut}%`;
+  $('cutDown').disabled = state.cut <= 0;
+  $('cutUp').disabled = state.cut >= 20;
+  $('cutNote').textContent = state.cut ? `Each month's target is last month minus ${state.cut}%.` : 'Each month\'s target is the same as last month.';
+  $('count').textContent = state.entries.length ? `${state.entries.length} entr${state.entries.length === 1 ? 'y' : 'ies'}` : '';
+}
+$('cutDown').onclick = () => { state.cut = Math.max(0, state.cut - 1); save(); renderSettings(); };
+$('cutUp').onclick = () => { state.cut = Math.min(20, state.cut + 1); save(); renderSettings(); };
+$('backup').onclick = () => {
+  const blob = new Blob([JSON.stringify({ app: 'Penny', version: 1, ...state }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `penny-backup-${today()}.json`;
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+};
+$('restore').onchange = async (e) => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const s = JSON.parse(await f.text());
+    if (!Array.isArray(s.entries)) throw new Error();
+    const entries = s.entries.filter((x) => x && Number.isInteger(x.amt) && /^\d{4}-\d\d-\d\d$/.test(x.date) && CATS.includes(x.cat));
+    if (!confirm(`Replace what is on this phone with ${entries.length} entries from the backup?`)) return;
+    state = { entries, cut: Number.isInteger(s.cut) ? s.cut : 5, start: s.start || (entries.map((x) => x.date).sort()[0] || null) };
+    save(); renderAll(); toast('Backup restored');
+  } catch (err) { toast('That file is not a Penny backup'); }
+};
+$('wipe').onclick = () => {
+  if (!state.entries.length) return;
+  if (!confirm('Delete all spending on this phone? This cannot be undone.')) return;
+  state = { entries: [], cut: state.cut, start: null }; save(); viewYm = thisYm(); renderAll(); toast('All spending deleted');
+};
+
+/* ---------- tabs ---------- */
+let curTab = 'month';
+function showTab(t) {
+  curTab = t;
+  document.querySelectorAll('.tabbtn[data-tab]').forEach((b) => { if (b.dataset.tab === t) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  ['month', 'compare', 'settings'].forEach((v) => $('v-' + v).classList.toggle('on', v === t));
+  document.body.classList.toggle('on-month', t === 'month');
+  if (t === 'month') renderMonth(); else if (t === 'compare') renderCompare(); else renderSettings();
+  $('v-' + t).scrollTop = 0;
+}
+document.querySelectorAll('.tabbtn[data-tab]').forEach((b) => (b.onclick = () => showTab(b.dataset.tab)));
+
+/* ---------- sheets ---------- */
+const openSheets = [];
+function open(id) {
+  const w = $(id); w.classList.remove('leaving'); w.classList.add('on');
+  openSheets.push(id); document.documentElement.classList.add('sheet-open');
+}
+function close(id) {
+  const w = $(id); if (!w.classList.contains('on')) return;
+  w.classList.add('leaving');
+  const i = openSheets.indexOf(id); if (i > -1) openSheets.splice(i, 1);
+  if (!openSheets.length) document.documentElement.classList.remove('sheet-open');
+  setTimeout(() => { w.classList.remove('on', 'leaving'); w.querySelector('.sheet').style.transform = ''; }, 300);
+}
+// Swipe down from the top of a sheet to close it.
+document.querySelectorAll('.sheet-wrap').forEach((w) => {
+  const sheet = w.querySelector('.sheet'), head = w.querySelector('.sheet-head');
+  let y0 = null, dy = 0;
+  head.addEventListener('touchstart', (e) => { if (e.target.closest('button, input, label')) return; y0 = e.touches[0].clientY; dy = 0; sheet.classList.add('dragging'); }, { passive: true });
+  head.addEventListener('touchmove', (e) => { if (y0 === null) return; dy = Math.max(0, e.touches[0].clientY - y0); sheet.style.transform = `translateY(${dy}px)`; }, { passive: true });
+  head.addEventListener('touchend', () => { if (y0 === null) return; sheet.classList.remove('dragging'); y0 = null; if (dy > 110) close(w.id); else sheet.style.transform = ''; });
+  w.addEventListener('click', (e) => { if (e.target === w) close(w.id); });
+});
+
+/* ---------- add and edit ---------- */
+let draft = null; // { id, str, cat, date, note }
+function openAdd(entry) {
+  draft = entry
+    ? { id: entry.id, str: String(entry.amt / 100).replace(/\.(\d)$/, '.$10'), cat: entry.cat, date: entry.date, note: entry.note || '' }
+    : { id: null, str: '', cat: null, date: today(), note: '' };
+  if (draft.str.endsWith('.00')) draft.str = draft.str.slice(0, -3);
+  $('delEntry').style.visibility = draft.id ? 'visible' : 'hidden';
+  $('addSheet').setAttribute('aria-label', draft.id ? 'Edit spending' : 'Add spending');
+  $('noteInput').value = draft.note;
+  $('noteInput').hidden = !draft.note; $('noteBtn').hidden = !!draft.note;
+  renderDraft();
+  open('addSheet');
+}
+function cents() { const v = parseFloat(draft.str); return isNaN(v) ? 0 : Math.round(v * 100); }
+function renderDraft() {
+  const s = draft.str, [i, f] = s.split('.');
+  const shown = s === '' ? '€0' : '€' + Number(i || 0).toLocaleString('en-GB') + (f !== undefined ? '.' + f : '');
+  $('amount').textContent = shown;
+  $('amount').classList.toggle('zero', !cents());
+  const len = shown.length; $('amount').style.fontSize = len > 9 ? '52px' : len > 7 ? '62px' : '';
+  $('pills').querySelectorAll('.pill').forEach((p) => p.setAttribute('aria-pressed', String(p.dataset.cat === draft.cat)));
+  $('dateLabel').textContent = dateLabel(draft.date);
+  $('dateInput').value = draft.date;
+  $('dateInput').max = today();
+  $('save').disabled = !(cents() > 0 && draft.cat);
+}
+function dateLabel(iso) {
+  if (iso === today()) return 'Today';
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  if (iso === isoDay(y)) return 'Yesterday';
+  const d = new Date(iso + 'T12:00'); return `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()].slice(0, 3)}`;
+}
+$('pills').innerHTML = CATS.map((c) => `<button class="pill caption" data-cat="${esc(c)}" aria-pressed="false">${esc(c)}</button>`).join('');
+$('pills').onclick = (e) => { const p = e.target.closest('.pill'); if (p) { draft.cat = p.dataset.cat; renderDraft(); } };
+const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'del'];
+$('pad').innerHTML = KEYS.map((k) => k === 'del'
+  ? '<button data-k="del" aria-label="Delete"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M17 9l-5 6"/><path d="M12 9l5 6"/></svg></button>'
+  : `<button data-k="${k}" aria-label="${k === '.' ? 'Point' : k}">${k}</button>`).join('');
+function press(k) {
+  let s = draft.str;
+  if (k === 'del') s = s.slice(0, -1);
+  else if (k === '.') { if (!s.includes('.')) s = (s || '0') + '.'; }
+  else {
+    const [i, f] = s.split('.');
+    if (f !== undefined) { if (f.length < 2) s += k; }
+    else if (s === '0') s = k;
+    else if ((i || '').length < 6) s += k;
+  }
+  draft.str = s; renderDraft();
+}
+$('pad').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) press(b.dataset.k); });
+$('noteBtn').onclick = () => { $('noteBtn').hidden = true; $('noteInput').hidden = false; $('noteInput').focus(); };
+$('noteInput').oninput = (e) => { draft.note = e.target.value; };
+$('dateInput').onclick = (e) => { try { e.target.showPicker(); } catch (err) {} };
+$('dateInput').onchange = (e) => { if (e.target.value) { draft.date = e.target.value > today() ? today() : e.target.value; renderDraft(); } };
+$('addClose').onclick = () => close('addSheet');
+$('save').onclick = () => {
+  const amt = cents(); if (!(amt > 0 && draft.cat)) return;
+  const note = draft.note.trim();
+  if (draft.id) {
+    const e = state.entries.find((x) => x.id === draft.id);
+    if (e) Object.assign(e, { amt, cat: draft.cat, date: draft.date, note });
+  } else {
+    state.entries.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), amt, cat: draft.cat, date: draft.date, note });
+  }
+  if (!state.start || draft.date < state.start) state.start = draft.date < today() ? draft.date : (state.start || today());
+  save(); close('addSheet');
+  if (!draft.id) { viewYm = ymOf(draft.date); }
+  renderAll(); if ($('catSheet').classList.contains('on')) renderCat();
+  toast(draft.id ? 'Saved' : `${eurosCents(amt)} for ${draft.cat}`);
+};
+$('delEntry').onclick = () => {
+  if (!draft.id) return;
+  state.entries = state.entries.filter((x) => x.id !== draft.id);
+  save(); close('addSheet'); renderAll(); if ($('catSheet').classList.contains('on')) renderCat(); toast('Deleted');
+};
+
+/* ---------- one category ---------- */
+let catOpen = null;
+function openCat(c) { catOpen = c; renderCat(); open('catSheet'); }
+function renderCat() {
+  const list = state.entries.filter((e) => e.cat === catOpen && ymOf(e.date) === viewYm).sort((a, b) => (b.date + b.id).localeCompare(a.date + a.id));
+  $('catTitle').textContent = catOpen;
+  $('catSub').textContent = `${euros(list.reduce((s, e) => s + e.amt, 0))} in ${monthName(viewYm)}`;
+  $('catList').innerHTML = list.length
+    ? list.map((e) => `<button class="erow" data-id="${e.id}"><span><span class="body">${esc(dateLabel(e.date))}</span>${e.note ? `<span class="caption muted">${esc(e.note)}</span>` : ''}</span><span class="body num">${eurosCents(e.amt)}</span></button>`).join('')
+    : '<p class="body empty">Nothing here.</p>';
+}
+$('catList').onclick = (e) => { const r = e.target.closest('.erow'); if (r) openAdd(state.entries.find((x) => x.id === r.dataset.id)); };
+$('catClose').onclick = () => close('catSheet');
+
+/* ---------- design system ---------- */
+$('openDs').onclick = () => { if (!$('dsFrame').src) $('dsFrame').src = 'design-system/index.html'; open('dsSheet'); };
+$('dsClose').onclick = () => close('dsSheet');
+
+/* ---------- misc ---------- */
+let tt;
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 1800); }
+$('addBtn').onclick = () => openAdd(null);
+
+document.addEventListener('keydown', (e) => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const top = openSheets[openSheets.length - 1];
+  if (e.key === 'Escape' && top) { e.preventDefault(); close(top); return; }
+  if (top === 'addSheet' && e.target !== $('noteInput')) {
+    if (/^[0-9]$/.test(e.key)) { e.preventDefault(); press(e.key); }
+    else if (e.key === '.' || e.key === ',') { e.preventDefault(); press('.'); }
+    else if (e.key === 'Backspace') { e.preventDefault(); press('del'); }
+    else if (e.key === 'Enter') { e.preventDefault(); $('save').click(); }
+  } else if (!top && e.key === 'n' && curTab === 'month') { e.preventDefault(); openAdd(null); }
+});
+
+function renderAll() { if (curTab === 'month') renderMonth(); else if (curTab === 'compare') renderCompare(); else renderSettings(); }
+// When the app comes back after a day or a new month, show the current month.
+let lastDay = today();
+document.addEventListener('visibilitychange', () => { if (!document.hidden && today() !== lastDay) { if (viewYm === ymOf(lastDay)) viewYm = thisYm(); lastDay = today(); renderAll(); } });
+
+renderMonth();
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>

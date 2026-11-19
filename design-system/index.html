@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Penny design system</title>
+<link rel="icon" type="image/svg+xml" href="../icon.svg">
+<meta name="description" content="Colours, type, components and rules of Penny, the app that helps you spend a little less each month.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500&display=swap">
+<style>
+:root {
+  --bg: #FBF7EC;
+  --surface: #FFFFFF;
+  --ink: #2A2216;
+  --muted: #6F6553;
+  --quiet: #C9BFAA;
+  --primary: #F2B705;
+  --gold-line: #E3A600;
+  --gold-text: #7A5300;
+  --soft: #F6ECCB;
+  --track: #F1EADA;
+  --coral-text: #B4331A;
+  --coral-soft: #FCEEE8;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --card-pad: 22px;
+  --gutter: 28px;
+  --top: 64px;
+  --radius-card: 28px;
+  --radius-pill: 999px;
+  --shadow-nav: 0 8px 24px rgba(42,34,22,0.06);
+  --size-button: 56px;
+  --size-nav: 64px;
+  --size-tab: 52px;
+  --size-row: 56px;
+  --size-pill: 48px;
+  --size-round: 44px;
+  --size-line: 3px;
+  --font-sans: Outfit, -apple-system, system-ui, sans-serif;
+}
+.amount-entry { font-family: var(--font-sans); font-size: 72px; line-height: 76px; font-weight: 300; letter-spacing: -2px; }
+.amount { font-family: var(--font-sans); font-size: 60px; line-height: 64px; font-weight: 300; letter-spacing: -1.8px; }
+.figure { font-family: var(--font-sans); font-size: 56px; line-height: 60px; font-weight: 300; letter-spacing: -1.5px; }
+.key { font-family: var(--font-sans); font-size: 28px; line-height: 34px; font-weight: 300; }
+.title { font-family: var(--font-sans); font-size: 28px; line-height: 34px; font-weight: 300; letter-spacing: -0.4px; }
+.button { font-family: var(--font-sans); font-size: 17px; line-height: 22px; font-weight: 500; }
+.label { font-family: var(--font-sans); font-size: 17px; line-height: 24px; font-weight: 400; }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 20px; font-weight: 400; }
+.small { font-family: var(--font-sans); font-size: 15px; line-height: 20px; font-weight: 400; }
+.caption { font-family: var(--font-sans); font-size: 13px; line-height: 18px; font-weight: 400; }
+.tab { font-family: var(--font-sans); font-size: 11px; line-height: 14px; font-weight: 400; }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+.layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); max-width: 1280px; margin: 0 auto; }
+aside { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 32px 20px 32px 28px; border-right: 1px solid var(--track); }
+aside > .brand { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; }
+aside a { display: block; padding: 6px 10px; margin: 0 -10px; border-radius: 8px; color: var(--ink); text-decoration: none; font-size: 15px; }
+aside a:hover { background: var(--surface); }
+aside .label { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 22px 0 6px; }
+main { padding: 32px 40px 96px; min-width: 0; }
+.cover { border-radius: 20px; overflow: hidden; border: 1px solid var(--track); background: var(--bg); }
+.cover > .cv { width: 100% !important; }
+h1 { font-size: 44px; font-weight: 600; letter-spacing: -.02em; margin: 36px 0 8px; }
+h2.sec { font-size: 30px; font-weight: 600; letter-spacing: -.02em; margin: 72px 0 6px; padding-top: 8px; }
+h3 { font-size: 20px; font-weight: 600; margin: 32px 0 8px; }
+.lead { font-size: 17px; line-height: 1.55; color: var(--muted); max-width: 680px; margin: 0; }
+.prose { max-width: 720px; font-size: 15px; line-height: 1.6; }
+.prose p { margin: 0 0 10px; } .prose ul, .prose ol { margin: 0 0 14px; padding-left: 20px; } .prose li { margin: 3px 0; }
+.prose h3 { font-size: 17px; margin: 22px 0 6px; } .prose b { font-weight: 600; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .86em; background: var(--surface); border: 1px solid var(--track); border-radius: 6px; padding: 1px 6px; }
+.table { overflow-x: auto; margin: 6px 0 16px; border: 1px solid var(--track); border-radius: 14px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--track); vertical-align: top; }
+th { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+.group { margin-top: 28px; } .group h3 { margin: 0 0 2px; } .group .use { color: var(--muted); font-size: 14px; margin: 0 0 12px; }
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.sw { background: var(--surface); border: 1px solid var(--track); border-radius: 14px; overflow: hidden; }
+.sw .chip { height: 72px; border-bottom: 1px solid var(--track); }
+.sw .meta { padding: 10px 12px 12px; font-size: 13px; line-height: 1.45; }
+.sw .meta b { font-size: 14px; font-weight: 600; } .sw .meta span { color: var(--muted); float: right; font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+.sw .meta p { color: var(--muted); margin: 6px 0 0; }
+.specimens { background: var(--surface); border: 1px solid var(--track); border-radius: 16px; }
+.spec { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 20px; padding: 18px 20px; border-bottom: 1px solid var(--track); align-items: baseline; }
+.spec:last-child { border-bottom: 0; }
+.spec .info { font-size: 13px; color: var(--muted); line-height: 1.5; } .spec .info b { color: var(--ink); font-weight: 600; font-size: 14px; display: block; }
+.spec .sample { min-width: 0; overflow-wrap: anywhere; }
+.scales { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.scale { background: var(--surface); border: 1px solid var(--track); border-radius: 16px; padding: 6px 16px; }
+.scale h3 { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 10px 0 4px; }
+.step { display: grid; grid-template-columns: 110px 60px minmax(0, 1fr); gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--track); font-size: 13px; }
+.step b { font-weight: 600; } .step .v { color: var(--muted); font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+.bar { height: 10px; background: var(--primary); border-radius: 3px; } .box { width: 34px; height: 34px; background: var(--soft); border: 1px solid var(--track); }
+.comp { margin-top: 28px; background: var(--surface); border: 1px solid var(--track); border-radius: 20px; overflow: hidden; }
+.comp .stage { background: var(--bg); padding: 28px; border-bottom: 1px solid var(--track); overflow-x: auto; display: flex; justify-content: center; }
+.comp .guide { padding: 20px 24px 22px; }
+.comp .guide h3 { margin: 0 0 4px; font-size: 22px; } .comp .guide .lead { font-size: 15px; margin-bottom: 10px; }
+.comp .guide ul { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.6; color: var(--ink); } .comp .guide li { margin: 3px 0; }
+footer { margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--track); font-size: 14px; color: var(--muted); }
+footer a, .prose a { color: var(--gold-text); }
+@media (max-width: 860px) {
+  .layout { display: block; }
+  aside { position: sticky; z-index: 5; height: auto; display: flex; gap: 6px; overflow-x: auto; padding: 10px 16px; background: var(--bg); border-right: 0; border-bottom: 1px solid var(--track); white-space: nowrap; }
+  aside > .brand, aside .label { display: none; }
+  aside a { margin: 0; padding: 6px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--track); font-size: 14px; }
+  main { padding: 20px 16px 72px; }
+  h1 { font-size: 34px; } h2.sec { font-size: 26px; margin-top: 56px; }
+  .spec { grid-template-columns: 1fr; gap: 6px; }
+  .comp .stage { padding: 16px; justify-content: flex-start; }
+  .cover .cv { height: 220px !important; } .cover .cv svg { display: none; } .cover .nm { font-size: 64px !important; } .cover .txt { left: 20px !important; bottom: 22px !important; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside>
+  <div class="brand">Penny</div>
+  <a href="#overview">Overview</a><a href="#colour">Colour</a><a href="#type">Type</a><a href="#scale">Spacing and shape</a>
+  <div class="label">Components</div>
+  <a href="#mainbutton">Main Button</a><a href="#targetbar">Target Bar</a><a href="#categoryrow">Category Row</a><a href="#monthbars">Month Bars</a><a href="#categorypill">Category Pill</a><a href="#numberpad">Number Pad</a><a href="#tabbar">Tab Bar</a>
+  <div class="label">Guidelines</div>
+  <a href="#principles">Principles</a><a href="#content">Content</a><a href="#fair-compare">Fair compare</a><a href="#target">Target</a><a href="#categories">Categories</a><a href="#layout">Layout</a><a href="#navigation">Navigation</a><a href="#screens">Screens</a><a href="#iconography">Iconography</a><a href="#accessibility">Accessibility</a>
+</aside>
+<main>
+  <div class="cover" id="overview">
+<style>
+.cv{position:relative;width:960px;height:300px;background:var(--bg);overflow:hidden;font-family:var(--font-sans)}
+.cv svg{position:absolute;left:480px;top:0}
+.cv .surface{fill:var(--surface)} .cv .gold{fill:var(--primary)} .cv .soft{fill:var(--soft)} .cv .track{fill:var(--track)}
+.txt{position:absolute;left:40px;bottom:36px;max-width:440px}
+.nm{margin:0;font-size:120px;line-height:.92;font-weight:300;letter-spacing:-0.03em;color:var(--ink)}
+.tg{margin:12px 0 0;font-size:14px;line-height:20px;color:var(--muted)}
+</style>
+<div class="cv">
+<svg width="480" height="300" viewBox="0 0 480 300" aria-hidden="true">
+  <rect class="surface" x="20" y="-28" width="400" height="356" rx="28"></rect>
+  <rect class="soft" x="330" y="-28" width="200" height="160" rx="28"></rect>
+  <circle class="gold" cx="330" cy="132" r="64"></circle>
+  <rect class="track" x="56" y="110" width="28" height="170" rx="14"></rect>
+  <rect class="track" x="112" y="128" width="28" height="152" rx="14"></rect>
+  <rect class="track" x="168" y="146" width="28" height="134" rx="14"></rect>
+  <rect class="track" x="224" y="164" width="28" height="116" rx="14"></rect>
+  <rect class="track" x="280" y="200" width="28" height="80" rx="14"></rect>
+  <rect class="gold" x="336" y="224" width="28" height="56" rx="14"></rect>
+</svg>
+<div class="txt"><h1 class="nm">Penny</h1><p class="tg">Spend a little less each month.</p></div>
+</div>
+</div>
+  <h1>Penny design system</h1>
+  <div class="prose"><p class="lead">Spend a little less each month. Penny records what you spend in a few taps, sets a target a bit lower than last month, and shows every day whether you are on track. It runs as a web app you add to the Home Screen.</p></div>
+
+  <h2 class="sec" id="colour">Colour</h2>
+  <p class="lead">Every colour has one job. Text colours pass 4.5 to 1 where they are used.</p>
+  <div class="group"><h3>Ground</h3><p class="use">Every screen, cards, pills, the tab bar</p><div class="swatches"><div class="sw"><div class="chip" style="background:#FBF7EC"></div><div class="meta"><b>bg</b><span>#FBF7EC</span><p>The one warm background on every screen, Add included. No hero, no dark areas.</p></div></div><div class="sw"><div class="chip" style="background:#FFFFFF"></div><div class="meta"><b>surface</b><span>#FFFFFF</span><p>Cards, category pills, round buttons and the tab bar.</p></div></div></div></div><div class="group"><h3>Text</h3><p class="use">Amounts and names, labels, unused arrows</p><div class="swatches"><div class="sw"><div class="chip" style="background:#2A2216"></div><div class="meta"><b>ink</b><span>#2A2216</span><p>Primary text, amounts and text on primary. 15.4 to 1 on bg, 9.2 on primary.</p></div></div><div class="sw"><div class="chip" style="background:#6F6553"></div><div class="meta"><b>muted</b><span>#6F6553</span><p>Dates, labels like Spent, the target amount, inactive month arrows. 5.3 to 1 on bg, 5.6 on surface.</p></div></div><div class="sw"><div class="chip" style="background:#C9BFAA"></div><div class="meta"><b>quiet</b><span>#C9BFAA</span><p>A month arrow that cannot be used yet. Graphic only, never text.</p></div></div></div></div><div class="group"><h3>Action</h3><p class="use">The one main button, this month's bar, selected tab and pill</p><div class="swatches"><div class="sw"><div class="chip" style="background:#F2B705"></div><div class="meta"><b>primary</b><span>#F2B705</span><p>Golden yellow fill for the one main action, Add spending and Save, and this month's bar. Text on it uses ink.</p></div></div><div class="sw"><div class="chip" style="background:#F6ECCB"></div><div class="meta"><b>soft</b><span>#F6ECCB</span><p>Soft gold fill behind the selected tab and the selected category. Text on it uses gold-text.</p></div></div></div></div><div class="group"><h3>Progress</h3><p class="use">Target bar, category bars, chart bars</p><div class="swatches"><div class="sw"><div class="chip" style="background:#E3A600"></div><div class="meta"><b>gold-line</b><span>#E3A600</span><p>Thin progress fills, the target bar and category bars, and the ring on a selected category. Graphic only.</p></div></div><div class="sw"><div class="chip" style="background:#F1EADA"></div><div class="meta"><b>track</b><span>#F1EADA</span><p>Empty part of thin bars and past months in the Compare chart.</p></div></div></div></div><div class="group"><h3>Saving</h3><p class="use">Less than before, streaks, links</p><div class="swatches"><div class="sw"><div class="chip" style="background:#7A5300"></div><div class="meta"><b>gold-text</b><span>#7A5300</span><p>The only gold for text. Spending less, streaks, links, the selected tab. 6.6 to 1 on bg, 6.3 on soft.</p></div></div></div></div><div class="group"><h3>More</h3><p class="use">More than before, over target, delete</p><div class="swatches"><div class="sw"><div class="chip" style="background:#B4331A"></div><div class="meta"><b>coral-text</b><span>#B4331A</span><p>Spending more than before, going over target, delete. 5.8 to 1 on bg.</p></div></div><div class="sw"><div class="chip" style="background:#FCEEE8"></div><div class="meta"><b>coral-soft</b><span>#FCEEE8</span><p>Behind delete confirm buttons and an over target note.</p></div></div></div></div>
+
+  <h2 class="sec" id="type">Type</h2>
+  <p class="lead">One typeface, Outfit. Sizes shown at real size.</p>
+  <div class="specimens"><div class="spec"><div class="info"><b>amount-entry</b>72px · 300 · -2px<br>The amount you type in Add. Tabular numbers.</div><div class="sample amount-entry">€12,40</div></div><div class="spec"><div class="info"><b>amount</b>60px · 300 · -1.8px<br>What you spent this month on Month.</div><div class="sample amount">€1,284</div></div><div class="spec"><div class="info"><b>figure</b>56px · 300 · -1.5px<br>The saving on Compare.</div><div class="sample figure">€220 less</div></div><div class="spec"><div class="info"><b>key</b>28px · 300<br>Number pad keys.</div><div class="sample key">7</div></div><div class="spec"><div class="info"><b>title</b>28px · 300 · -0.4px<br>Screen titles. Month has none, its date row leads instead.</div><div class="sample title">Compare</div></div><div class="spec"><div class="info"><b>button</b>17px · 500<br>Full width buttons and section labels like Since October.</div><div class="sample button">Add spending</div></div><div class="spec"><div class="info"><b>label</b>17px · 400<br>The word above a big number.</div><div class="sample label">Spent</div></div><div class="spec"><div class="info"><b>body</b>16px · 400<br>Category names and amounts in cards.</div><div class="sample body">Groceries</div></div><div class="spec"><div class="info"><b>small</b>15px · 400<br>The change line, dates, Today, Add a note. 500 when it is a change or a streak.</div><div class="sample small">€96 less than this time in October</div></div><div class="spec"><div class="info"><b>caption</b>13px · 400<br>Target line, category pills, chart month labels.</div><div class="sample caption">Target €1,425</div></div><div class="spec"><div class="info"><b>tab</b>11px · 400<br>Tab labels. 500 on the selected tab.</div><div class="sample tab">Month</div></div></div>
+
+  <h2 class="sec" id="scale">Spacing and shape</h2>
+  <div class="scales">
+    <div class="scale"><h3>Spacing</h3><div class="step"><b>space-1</b><span class="v">4px</span><div class="bar" style="width:4px"></div></div><div class="step"><b>space-2</b><span class="v">8px</span><div class="bar" style="width:8px"></div></div><div class="step"><b>space-3</b><span class="v">16px</span><div class="bar" style="width:16px"></div></div><div class="step"><b>space-4</b><span class="v">24px</span><div class="bar" style="width:24px"></div></div><div class="step"><b>card-pad</b><span class="v">22px</span><div class="bar" style="width:22px"></div></div><div class="step"><b>gutter</b><span class="v">28px</span><div class="bar" style="width:28px"></div></div><div class="step"><b>top</b><span class="v">64px</span><div class="bar" style="width:64px"></div></div></div>
+    <div class="scale"><h3>Radius</h3><div class="step"><b>radius-card</b><span class="v">28px</span><div class="box" style="border-radius:28px"></div></div><div class="step"><b>radius-pill</b><span class="v">999px</span><div class="box" style="border-radius:999px"></div></div></div>
+    <div class="scale"><h3>Size</h3><div class="step"><b>size-button</b><span class="v">56px</span><span class="v">Height of Add spending and Save.</span></div><div class="step"><b>size-nav</b><span class="v">64px</span><span class="v">Height of the tab bar.</span></div><div class="step"><b>size-tab</b><span class="v">52px</span><span class="v">One tab inside the bar, 100 wide.</span></div><div class="step"><b>size-row</b><span class="v">56px</span><span class="v">A category row on Month. Rows on Compare are 50.</span></div><div class="step"><b>size-pill</b><span class="v">48px</span><span class="v">A category pill in Add.</span></div><div class="step"><b>size-round</b><span class="v">44px</span><span class="v">Round buttons like close, and the smallest tap target.</span></div><div class="step"><b>size-line</b><span class="v">3px</span><span class="v">Thickness of the target bar and category bars.</span></div></div>
+  </div>
+
+  <h2 class="sec" id="components">Components</h2>
+  <p class="lead">Each one as it appears in the app, with the rules that go with it.</p>
+  <section class="comp" id="mainbutton"><div class="stage">
+<div style="font-family:var(--font-sans);background:var(--bg);color:var(--ink);padding:16px;display:flex;flex-direction:column;gap:12px;width:340px">
+<button type="button" class="button" style="height:56px;border:0;border-radius:999px;background:var(--primary);color:var(--ink);font-family:var(--font-sans);display:flex;align-items:center;justify-content:center;gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add spending</button>
+<button type="button" disabled class="button" style="height:56px;border:0;border-radius:999px;background:var(--primary);color:var(--ink);opacity:.4;font-family:var(--font-sans)">Save</button>
+</div>
+</div><div class="guide"><h3>Main Button</h3><p class="lead">The one action on a screen, Add spending on Month and Save in Add.</p><ul><li><code>primary</code> fill, <code>ink</code> text in <code>button</code>, <code>size-button</code> tall, full width, <code>radius-pill</code>.</li><li>One per screen, 16 above the tab bar or the bottom margin.</li><li>Disabled at 40 percent until it can do something.</li></ul></div></section>
+<section class="comp" id="targetbar"><div class="stage">
+<div style="font-family:var(--font-sans);background:var(--bg);color:var(--ink);padding:16px;width:340px;display:flex;flex-direction:column;gap:28px">
+<div><div style="height:3px;border-radius:999px;background:var(--track);overflow:hidden"><div style="width:90%;height:3px;border-radius:999px;background:var(--gold-line)"></div></div><div class="caption" style="margin-top:10px;display:flex;justify-content:space-between"><span style="font-weight:500">€141 left for 12 days</span><span style="color:var(--muted)">Target €1,425</span></div></div>
+<div><div style="height:3px;border-radius:999px;background:var(--track);overflow:hidden"><div style="width:100%;height:3px;border-radius:999px;background:var(--coral-text)"></div></div><div class="caption" style="margin-top:10px;display:flex;justify-content:space-between"><span style="font-weight:500;color:var(--coral-text)">€40 over</span><span style="color:var(--muted)">Target €1,425</span></div></div>
+</div>
+</div><div class="guide"><h3>Target Bar</h3><p class="lead">Shows how much of this month's target is used and what is left.</p><ul><li>A <code>size-line</code> bar, <code>gold-line</code> on <code>track</code>, full width under the change line.</li><li>Left in <code>caption</code> 500 says €141 left for 12 days. Right in <code>muted</code> says Target €1,425.</li><li>Over target the fill and the left text turn <code>coral-text</code> and read €40 over.</li><li>Before the first full month it reads Your first target starts in December.</li></ul></div></section>
+<section class="comp" id="categoryrow"><div class="stage">
+<div style="font-family:var(--font-sans);background:var(--bg);color:var(--ink);padding:16px;width:340px">
+<div style="border-radius:28px;background:var(--surface);padding:8px 22px">
+<div style="height:56px;display:flex;flex-direction:column;justify-content:center;gap:8px"><div class="body" style="display:flex;justify-content:space-between"><span>Groceries</span><span>€342</span></div><div style="height:3px;border-radius:999px;background:var(--track)"><div style="width:100%;height:3px;border-radius:999px;background:var(--gold-line)"></div></div></div>
+<div style="height:56px;display:flex;flex-direction:column;justify-content:center;gap:8px"><div class="body" style="display:flex;justify-content:space-between"><span>Eating out</span><span>€268</span></div><div style="height:3px;border-radius:999px;background:var(--track)"><div style="width:78%;height:3px;border-radius:999px;background:var(--gold-line)"></div></div></div>
+</div></div>
+</div><div class="guide"><h3>Category Row</h3><p class="lead">One category on Month, with what it cost this month.</p><ul><li><code>body</code> name and amount, a <code>size-line</code> <code>gold-line</code> bar under them, scaled to the biggest category.</li><li>Rows sit in one <code>surface</code> card with <code>radius-card</code> and <code>card-pad</code>, no dividers.</li><li>The top four show. A more link in <code>gold-text</code> shows the rest.</li><li>Tap a row to see its entries for the month.</li></ul></div></section>
+<section class="comp" id="monthbars"><div class="stage">
+<div style="font-family:var(--font-sans);background:var(--bg);color:var(--ink);padding:16px;width:340px">
+<div style="border-radius:28px;background:var(--surface);padding:22px 22px 16px">
+<div style="height:140px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;align-items:end">
+<div style="height:118px;border-radius:999px;background:var(--track)"></div><div style="height:113px;border-radius:999px;background:var(--track)"></div><div style="height:109px;border-radius:999px;background:var(--track)"></div><div style="height:107px;border-radius:999px;background:var(--track)"></div><div style="height:103px;border-radius:999px;background:var(--track)"></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span class="caption" style="color:var(--gold-text);font-weight:500;white-space:nowrap">So far</span><div style="width:100%;height:88px;border-radius:999px;background:var(--primary)"></div></div>
+</div>
+<div class="caption" style="margin-top:10px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;text-align:center;color:var(--muted)"><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span style="color:var(--ink);font-weight:500">Nov</span></div>
+</div></div>
+</div><div class="guide"><h3>Month Bars</h3><p class="lead">What you spent in each of the last six months, on Compare.</p><ul><li>Pill bars from <code>radius-pill</code>, past months <code>track</code>, this month <code>primary</code> with So far above it in <code>gold-text</code>.</li><li>Month labels in <code>caption</code>, this month in <code>ink</code> 500, others <code>muted</code>.</li><li>The chart has one text label that lists every value.</li></ul></div></section>
+<section class="comp" id="categorypill"><div class="stage">
+<div style="font-family:var(--font-sans);background:var(--bg);color:var(--ink);padding:16px;width:340px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+<span class="caption" style="height:48px;border-radius:999px;background:var(--surface);display:flex;align-items:center;justify-content:center">Groceries</span>
+<span class="caption" style="height:48px;border-radius:999px;background:var(--surface);display:flex;align-items:center;justify-content:center">Eating out</span>
+<span class="caption" style="height:48px;border-radius:999px;background:var(--surface);display:flex;align-items:center;justify-content:center">Home</span>
+<span class="caption" style="height:48px;border-radius:999px;background:var(--soft);color:var(--gold-text);font-weight:500;box-shadow:inset 0 0 0 1.5px var(--gold-line);display:flex;align-items:center;justify-content:center">Transport</span>
+</div>
+</div><div class="guide"><h3>Category Pill</h3><p class="lead">Picks the category in Add.</p><ul><li><code>surface</code> pill, <code>size-pill</code> tall, <code>caption</code> text, in a 4 by 2 grid 8 apart.</li><li>Selected gets <code>soft</code>, <code>gold-text</code> 500 and a 1.5 <code>gold-line</code> ring.</li><li>One is always needed before Save works.</li></ul></div></section>
+<section class="comp" id="numberpad"><div class="stage">
+<div class="key" style="font-family:var(--font-sans);background:var(--bg);color:var(--ink);padding:16px;width:340px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;text-align:center">
+<span style="height:56px;line-height:56px">1</span><span style="height:56px;line-height:56px">2</span><span style="height:56px;line-height:56px">3</span><span style="height:56px;line-height:56px">4</span><span style="height:56px;line-height:56px">5</span><span style="height:56px;line-height:56px">6</span><span style="height:56px;line-height:56px">7</span><span style="height:56px;line-height:56px">8</span><span style="height:56px;line-height:56px">9</span><span style="height:56px;line-height:56px">.</span><span style="height:56px;line-height:56px">0</span><span style="height:56px;display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M17 9l-5 6M12 9l5 6"/></svg></span>
+</div>
+</div><div class="guide"><h3>Number Pad</h3><p class="lead">Types the amount in Add, so the phone keyboard never opens.</p><ul><li>3 by 4 keys, 56 tall, <code>key</code> style, no fill. A point for cents and a delete key.</li><li>Up to two decimals and six digits before the point.</li><li>On a laptop the number keys, Backspace and Enter work too.</li></ul></div></section>
+<section class="comp" id="tabbar"><div class="stage">
+<div style="font-family:var(--font-sans);background:var(--bg);color:var(--ink);padding:16px;width:340px">
+<div style="height:64px;border-radius:999px;background:var(--surface);box-shadow:var(--shadow-nav);display:flex;align-items:center;justify-content:space-around;padding:0 6px">
+<span class="tab" style="width:96px;height:52px;border-radius:999px;background:var(--soft);color:var(--gold-text);font-weight:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M14.5 9.2a3 3 0 1 0 0 5.6M8.5 11h4M8.5 13h4"/></svg>Month</span>
+<span class="tab" style="width:96px;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 20V12M12 20V5M19 20v-6"/></svg>Compare</span>
+<span class="tab" style="width:96px;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8.5"/></svg>Settings</span>
+</div></div>
+</div><div class="guide"><h3>Tab Bar</h3><p class="lead">Month, Compare and Settings, always at the bottom.</p><ul><li>A full width <code>surface</code> pill, <code>size-nav</code> tall, with <code>shadow-nav</code>, the only shadow in the app.</li><li>Each tab is 100 by 52 with a 1.6 line icon over a <code>tab</code> label.</li><li>The selected tab gets <code>soft</code> and <code>gold-text</code> 500.</li></ul></div></section>
+
+  <h2 class="sec" id="principles">Principles</h2><div class="prose"><ol><li><b>Less and less.</b> Every screen answers one question. Am I spending less than before? The change line, the target and the streak all serve that.</li><li><b>Three taps or less.</b> Amount, category, save. No names, no shops, no forms. A note is optional.</li><li><b>Quiet and minimal.</b> One warm background on every screen, light type, white cards, no hero, no shadows except the tab bar. The same direction as SaySay and Manna.</li><li><b>Gold for one thing.</b> <code>primary</code> fills only the main action on a screen and this month's bar. Gold text is always <code>gold-text</code>.</li><li><b>Less is gold, more is coral.</b> Saving shows in <code>gold-text</code>, spending more in <code>coral-text</code>, always with the words less or more.</li></ol></div>
+<h2 class="sec" id="content">Content</h2><div class="prose"><ul><li>Plain words, sentence case, short. No colons, semicolons or dashes in UI text.</li><li>Euro only. Totals round to whole euros, the amount in Add shows cents.</li><li>An entry's title is its category. A note shows under it only when one was added.</li><li>Changes read as €96 less or €22 more. No change reads Same.</li><li>English only for now.</li></ul></div>
+<h2 class="sec" id="fair-compare">Fair compare</h2><div class="prose"><ul><li>Month compares with the same days of last month. On the 18th it compares 1 to 18 November with 1 to 18 October, and reads €96 less than this time in October.</li><li>A month still running is marked So far in charts and never counted as a full month.</li></ul></div>
+<h2 class="sec" id="target">Target</h2><div class="prose"><ul><li>Each month's target is last month's total minus 5%. People can change the percentage in Settings.</li><li>Month shows the target as one thin <code>gold-line</code> bar on <code>track</code> under the change line, with €141 left for 12 days on the left and Target €1,425 on the right.</li><li>Over target, the bar and the left amount turn <code>coral-text</code> and read €40 over.</li><li>A month that ends under target adds one to the streak, and the next target is set from it.</li></ul></div>
+<h2 class="sec" id="categories">Categories</h2><div class="prose"><p>Eight to start. Groceries, Eating out, Home, Transport, Shopping, Fun, Health, Other. People can rename them and add more later.</p></div>
+<h2 class="sec" id="layout">Layout</h2><div class="prose"><ul><li>28 side margin and 64 from the top on every screen.</li><li>The big number leads each screen. Cards follow, 24 apart.</li><li>Cards are white with <code>radius-card</code> and no border. Rows have no dividers.</li><li>The main button sits full width 16 above the tab bar.</li></ul></div>
+<h2 class="sec" id="navigation">Navigation</h2><div class="prose"><ul><li>Three tabs, Month, Compare and Settings, in a full width white bar at the bottom with <code>shadow-nav</code>. The selected tab gets <code>soft</code> and <code>gold-text</code>.</li><li>Add spending on Month opens Add.</li></ul></div>
+<h2 class="sec" id="screens">Screens</h2><div class="prose"><ul><li><b>Month.</b> The month with arrows, Spent, the total, the change line, the target bar, then the top four categories with thin bars and a more link.</li><li><b>Add.</b> Close and Today at the top, the amount, Add a note, eight category pills in a 4 by 2 grid, the number pad, Save. The selected pill gets <code>soft</code> with a 1.5 <code>gold-line</code> ring.</li><li><b>Compare.</b> The title, the saving against June as the big number, the streak, bars for the last six months with this month in <code>primary</code> marked So far, then Since October with the four biggest changes.</li></ul></div>
+<h2 class="sec" id="iconography">Iconography</h2><div class="prose"><ul><li>Line icons, round caps and joins, 24 grid, 1.6 line, 1.8 for small arrows.</li><li>The mark is a smiling coin on <code>primary</code>.</li></ul></div>
+<h2 class="sec" id="accessibility">Accessibility</h2><div class="prose"><ul><li>WCAG 2.2 AA. Targets are at least 44.</li><li>Every icon button has a label. Bars and charts have a text label with every value.</li><li>Motion stops when reduced motion is on.</li></ul></div>
+
+  <footer>Built from the design-system folder of the <a href="https://github.com/yeochoi/penny">penny</a> repository. Shares its minimal direction with the <a href="https://yeochoi.github.io/saysay/design-system/">SaySay</a> and <a href="https://yeochoi.github.io/manna/">Manna</a> designs. <a href="../">Open the app</a>.</footer>
+</main>
+</div>
+</body>
+</html>

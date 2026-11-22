@@ -91,7 +91,7 @@ Rules
 ## Iconography
 
 - Line icons, round caps and joins, 24 grid, 1.6 line, 1.8 for small arrows.
-- The mark is a smiling coin on `primary`.
+- The mark is two bars in white on bright gold, a short faded one for last month and a tall one for this month. It is the compare Penny is built around.
 
 ## Accessibility
 

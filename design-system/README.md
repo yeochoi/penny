@@ -48,7 +48,11 @@ Rules
 
 ## Categories
 
-Eight to start. Groceries, Eating out, Home, Transport, Shopping, Fun, Health, Other. People can rename them and add more later.
+- Eight to start. Groceries, Eating out, Home, Transport, Shopping, Fun, Health, Other.
+- Settings has Categories, where people rename, add, reorder and hide them. Up to 12 show at once, so Add stays a 4 by 3 grid on one screen.
+- Each category has a fixed id, so a rename keeps all past spending.
+- Hide takes a category out of Add but keeps its past spending in Month and Compare. Delete only shows for a category with no spending.
+- Drag the grip to reorder. The order is the order of the pills in Add.
 
 ## Typography
 

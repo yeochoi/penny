@@ -229,7 +229,7 @@ body:not(.on-month) #addBtn { display: none; }
       <div class="set-card" style="margin-top:32px">
         <button class="set-row" id="wipe" style="justify-content:center"><span class="body coral">Delete all spending</span></button>
       </div>
-      <p class="caption foot">Penny 1.1</p>
+      <p class="caption foot">Penny 1.1.1</p>
     </div>
   </section>
 
@@ -663,9 +663,9 @@ function renderCats() {
   const shown = shownCats(), hidden = state.cats.filter((c) => c.hidden);
   $('catsList').innerHTML = shown.map((c) => {
     const used = usedCount(c.id);
-    return `<div class="crow-edit" data-id="${esc(c.id)}"><input value="${esc(c.name)}" maxlength="16" aria-label="Category name"><button class="text-btn small" data-act="${used ? 'hide' : 'del'}">${used ? 'Hide' : 'Delete'}</button><button class="grip" aria-label="Move ${esc(c.name)}">${gripSvg}</button></div>`;
+    return `<div class="crow-edit" data-id="${esc(c.id)}"><input value="${esc(c.name)}" maxlength="16" aria-label="Category name" name="penny-category" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done"><button class="text-btn small" data-act="${used ? 'hide' : 'del'}">${used ? 'Hide' : 'Delete'}</button><button class="grip" aria-label="Move ${esc(c.name)}">${gripSvg}</button></div>`;
   }).join('') || '<p class="body empty">No categories. Add one below.</p>';
-  $('hiddenWrap').innerHTML = hidden.length ? `<p class="caption muted" style="margin:12px 0 4px">Hidden. Past spending still counts in Month and Compare.</p>` + hidden.map((c) => `<div class="crow-edit" data-id="${esc(c.id)}"><input value="${esc(c.name)}" maxlength="16" aria-label="Category name" style="color:var(--muted)"><button class="text-btn small" data-act="show" style="color:var(--gold-text)">Show</button></div>`).join('') : '';
+  $('hiddenWrap').innerHTML = hidden.length ? `<p class="caption muted" style="margin:12px 0 4px">Hidden. Past spending still counts in Month and Compare.</p>` + hidden.map((c) => `<div class="crow-edit" data-id="${esc(c.id)}"><input value="${esc(c.name)}" maxlength="16" aria-label="Category name" name="penny-category" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done" style="color:var(--muted)"><button class="text-btn small" data-act="show" style="color:var(--gold-text)">Show</button></div>`).join('') : '';
   const full = shown.length >= MAX_CATS;
   $('newCat').disabled = full;
   $('catsNote').textContent = full ? `${MAX_CATS} is the most, so Add stays on one screen. Hide one to make room.` : `${shown.length} of ${MAX_CATS}. Hide keeps a category's past spending. Delete only shows when it has none.`;
@@ -684,7 +684,7 @@ function catsAct(e) {
 $('catsList').addEventListener('click', catsAct);
 $('hiddenWrap').addEventListener('click', catsAct);
 function rename(e) {
-  const input = e.target; if (input.tagName !== 'INPUT') return;
+  const input = e.target; if (input.tagName !== 'INPUT' || input.closest('.new')) return;
   const c = state.cats.find((x) => x.id === input.closest('.crow-edit').dataset.id); if (!c) return;
   const name = input.value.trim().replace(/\s+/g, ' ').slice(0, 16);
   if (!name) { input.value = c.name; return; }
@@ -695,14 +695,25 @@ function rename(e) {
 $('catsList').addEventListener('change', rename);
 $('hiddenWrap').addEventListener('change', rename);
 document.getElementById('catsSheet').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') e.target.blur(); });
+// A new category starts as an empty field at the top of the list, where the keyboard never covers it.
+// It is saved when you finish typing, and dropped if you leave it empty.
 $('newCat').onclick = () => {
-  if (shownCats().length >= MAX_CATS) return;
-  let n = 1, name = 'New category'; while (state.cats.some((x) => x.name === name)) name = `New category ${++n}`;
-  const c = { id: newId(), name, hidden: false };
-  const at = state.cats.reduce((k, x, i) => (x.hidden ? k : i + 1), 0); state.cats.splice(at, 0, c);
-  save(); renderCats();
-  const input = document.querySelector(`#catsList [data-id="${c.id}"] input`); if (input) { input.focus(); input.select(); }
+  if (shownCats().length >= MAX_CATS || $('catsList').querySelector('.crow-edit.new')) return;
+  const row = document.createElement('div');
+  row.className = 'crow-edit new';
+  row.innerHTML = '<input value="" maxlength="16" placeholder="Name" aria-label="New category name" name="penny-category" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done">';
+  $('catsList').prepend(row);
+  row.closest('.sheet-body').scrollTop = 0;
+  row.querySelector('input').focus();
 };
+$('catsList').addEventListener('focusout', (e) => {
+  const row = e.target.closest('.crow-edit.new'); if (!row) return;
+  const name = e.target.value.trim().replace(/\s+/g, ' ').slice(0, 16);
+  if (name && state.cats.some((x) => x.name.toLowerCase() === name.toLowerCase())) toast('You already have that one');
+  else if (name && shownCats().length < MAX_CATS) { state.cats.unshift({ id: newId(), name, hidden: false }); save(); toast(`${name} added`); }
+  renderCats();
+});
+
 // Drag the grip to reorder. The order is the order of the pills in Add. The list scrolls when the finger nears its edges.
 $('catsList').addEventListener('pointerdown', (e) => {
   const grip = e.target.closest('.grip'); if (!grip) return;
@@ -731,6 +742,18 @@ $('catsList').addEventListener('pointerdown', (e) => {
   };
   window.addEventListener('pointermove', move, { passive: false }); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
 });
+
+/* ---------- keyboard ---------- */
+// On iPhone the keyboard covers fixed sheets instead of pushing them up. Sizing sheets to the visible area keeps the field you type in on screen.
+if (window.visualViewport) {
+  const vv = window.visualViewport;
+  const fit = () => {
+    document.querySelectorAll('.sheet-wrap').forEach((w) => { w.style.top = vv.offsetTop + 'px'; w.style.height = vv.height + 'px'; w.style.bottom = 'auto'; });
+    const a = document.activeElement;
+    if (a && a.tagName === 'INPUT' && a.closest('.sheet-wrap')) setTimeout(() => a.scrollIntoView({ block: 'nearest' }), 50);
+  };
+  vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit); fit();
+}
 
 /* ---------- design system ---------- */
 $('openDs').onclick = () => { if (!$('dsFrame').src) $('dsFrame').src = 'design-system/index.html'; open('dsSheet'); };
